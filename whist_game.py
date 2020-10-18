@@ -23,6 +23,11 @@ class Card:
         self.rank = rank
         self.value = value
 
+    def __str__(self):
+        return 'Suit= '+self.suit+' Rank= '+self.rank+' Value='+str(self.value)
+
+
+# deck class is responsible for creating a deck of 52 cards stored in a list
 
 class Deck:
     def __init__(self):
@@ -34,18 +39,6 @@ class Deck:
 
     def remove_all_cards(self):
         self.cards_in_deck.clear()
-
-# remove Hand class, add cards in hand list and methods under player class
-
-# class Hand:
-#     def __init__(self):
-#         self.cards_in_hand = []
-# 
-#     def add_card(self, card):
-#         self.cards_in_hand.append(card)
-# 
-#     def remove_card(self, card):
-#         self.cards_in_hand.remove(card)
 
 
 class Player:
@@ -82,7 +75,6 @@ class Player:
         if self.check_suit_available(self.cards_in_hand, lead_card["card"].suit):
             print("follow contains lead cards")
             highest_card = self.find_highest_card_in_suit(self.cards_in_hand, lead_card["card"].suit)
-        # if highest_card is not None:
             if highest_card.value > current_winning_card["card"].value and current_winning_card["card"].suit \
                     == lead_card["card"].suit:
                 card_to_play = copy.copy(highest_card)
@@ -118,12 +110,7 @@ class Player:
                     if self.check_suit_available(self.cards_in_hand, suit):
                         lowest_cards.append(self.find_lowest_card_in_suit(self.cards_in_hand, suit))
                 lowest_cards.sort(key=lambda c: c.value)
-                # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!reached!!!!!!!")
-                # for card in lowest_cards:
-                #     print(card.value)
-                # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!reached!!!!!!!")
                 lowest_card = lowest_cards[0]
-                print("lowerst card returned----------------------------------------------" + str(lowest_card.value))
                 card_to_play = copy.copy(lowest_card)
                 self.remove_card(lowest_card)
                 return card_to_play
@@ -150,8 +137,6 @@ class Player:
                 if card.value < lowest_card.value:
                     lowest_card = card
             return lowest_card
-        # else:
-        #     return None
 
     def find_highest_card_in_suit(self, cards, suit):
         print("highest method")
@@ -165,27 +150,38 @@ class Player:
                 if card.value > highest_card.value:
                     highest_card = card
             return highest_card
-        # else:
-        #     return None
 
     def show_hand(self):
-        for card in self.cards_in_hand:
-            print(card.suit + " " + str(card.value) + " " + card.rank + " " + self.name)
+        print('Displaying '+self.name+"'s hand")
+        for i in range(len(self.cards_in_hand)):
+            print(str(i) + ": " + self.cards_in_hand[i].__str__())
+        # for card in self.cards_in_hand:
+        #     card.__str__()
 
-# class ComputerPlayer:
-#     def __init__(self, hand, partner):
-#         super().__init__(hand)
-#         self.partner = partner
-#     # def play_card(self):
-#
-#
-# class HumanPlayer:
-#     def __init__(self, hand, partner):
-#         super().__init__(hand)
-#         self.partner =  partner
-#     # def play_card(self):
 
-#
+class HumanPlayer(Player):
+    def __init__(self, name):
+        super().__init__(name)
+
+    def play_lead_card(self, trump_suit):
+        self.show_hand()
+        card_number = input("Please select a card to start the trick by entering the card number:")
+        card = self.cards_in_hand[int(card_number)]
+        card_to_play = copy.copy(card)
+        self.remove_card(card)
+        return card_to_play
+
+    def play_follow_card(self, trump_suit, current_winning_card, lead_card):
+        self.show_hand()
+        print("The current winning card is:" + current_winning_card["card"].__str__() + " played by:"
+              + current_winning_card["player"].name)
+        card_number = input("Please select a card to play by entering the card number:")
+        card = self.cards_in_hand[int(card_number)]
+        card_to_play = copy.copy(card)
+        self.remove_card(card)
+        return card_to_play
+
+
 # class PlayerTeam:
 #     def __init__(self, member1, member2):
 #         self.member1 = member1
@@ -201,6 +197,9 @@ class Player:
 #         else: return self.member1
 
 
+# dealer class deals a deck of 52 cards to the players by adding a card to each player's hand (card list), one at
+# # a time in the order of the players list
+
 class Dealer:
     def __init__(self, deck):
         self.deck = deck
@@ -211,7 +210,6 @@ class Dealer:
         next_player = 0
         for card in self.deck.cards_in_deck:
             players[next_player].add_card(card)
-            # if next_player == 3:
             next_player += 1
             next_player = next_player % 4
             cards_dealt += 1
@@ -224,16 +222,8 @@ class Trick:
         self.players = players
         self.trump_suit = trump_suit
         self.current_winning_card = None
-        # self.lead_card = None
-        # self.second_card = None
-        # self.third_card = None
-        # self.fourth_card = None
         self.cards_played = []
         self.winner = None
-
-    # @property
-    # def winner(self):
-    #     return self.winner
 
     def find_current_winning_card(self, cards_played):
         lead_suit_cards = []
@@ -271,83 +261,6 @@ class Trick:
             self.find_current_winning_card(self.cards_played)
         self.winner = self.current_winning_card["player"]
 
-
-        # cards_played = []
-        # self.lead_card = {"player": self.players[self.starting_player_index], "card": self.players
-        #     [self.starting_player_index].play_lead_card(self.trump_suit)}
-        # cards_played.append(self.lead_card)
-        # self.find_current_winning_card(cards_played)
-        # self.next_player_index = self.starting_player_index + 1
-        # self.second_card = {"player": self.players[self.next_player_index], "card": self.players[self.next_player_index]
-        #     .play_follow_card(self.trump_suit, self.current_winning_card, self.lead_card)}
-        # cards_played.append(self.second_card)
-        # self.find_current_winning_card(cards_played)
-        # self.next_player_index += 1
-        # self.third_card = {"player": self.players[self.next_player_index], "card": self.players[self.next_player_index]
-        #     .play_follow_card(self.trump_suit, self.current_winning_card, self.lead_card)}
-        # cards_played.append(self.third_card)
-        # self.find_current_winning_card(cards_played)
-        # self.next_player_index += 1
-        # self.fourth_card = {"player": self.players[self.next_player_index], "card": self.players[self.next_player_index]
-        #     .play_follow_card(self.trump_suit, self.current_winning_card, self.lead_card)}
-        # cards_played.append(self.fourth_card)
-        # self.find_current_winning_card(cards_played)
-
-        # self.current_winning_card = self.lead_card
-        # self.next_player_index = self.starting_player_index + 1
-        # print(str(self.next_player_index))
-        #
-        # self.second_card = {"player": self.players[self.next_player_index], "card": self.players[self.next_player_index]
-        #     .play_follow_card(self.trump_suit, self.current_winning_card, self.lead_card)}
-        # if self.second_card["card"].suit == self.lead_card["card"].suit and self.second_card["card"].value > \
-        #         self.lead_card["card"].value:
-        #     self.current_winning_card["card"] = self.second_card["card"]
-        # elif self.second_card["card"].suit == self.trump_suit:
-        #     self.current_winning_card = self.second_card
-        # self.next_player_index += 1
-        # print(str(self.next_player_index))
-        #
-        # self.third_card = {"player": self.players[self.next_player_index], "card": self.players[self.next_player_index]
-        #     .play_follow_card(self.trump_suit, self.current_winning_card, self.lead_card)}
-        # if self.third_card["card"].suit == self.lead_card["card"].suit and self.current_winning_card["card"].suit == \
-        #         self.lead_card["card"].suit:
-        #     if self.third_card["card"].value > self.current_winning_card["card"].value:
-        #         self.current_winning_card = self.third_card
-        # elif self.third_card["card"].suit == self.trump_suit and self.current_winning_card["card"].suit \
-        #         == self.trump_suit:
-        #     if self.third_card["card"].value > self.current_winning_card["card"].value:
-        #         self.current_winning_card = self.third_card
-        # elif self.third_card["card"].suit == self.trump_suit and self.current_winning_card["card"].suit \
-        #         != self.trump_suit:
-        #     self.current_winning_card = self.third_card
-        # self.next_player_index += 1
-        # print(str(self.next_player_index))
-        #
-        # self.fourth_card = {"player": self.players[self.next_player_index], "card": self.players[self.next_player_index]
-        #     .play_follow_card(self.trump_suit, self.current_winning_card, self.lead_card)}
-        # if self.fourth_card["card"].suit == self.lead_card["card"].suit and self.current_winning_card["card"].suit \
-        #         == self.lead_card["card"].suit:
-        #     if self.fourth_card["card"].value > self.current_winning_card["card"].value:
-        #         self.current_winning_card = self.fourth_card
-        # elif self.fourth_card["card"].suit == self.trump_suit and self.current_winning_card["card"].suit \
-        #         == self.trump_suit:
-        #     if self.fourth_card["card"].value > self.current_winning_card["card"].value:
-        #         self.current_winning_card = self.fourth_card
-        # elif self.fourth_card["card"].suit == self.trump_suit and self.current_winning_card["card"].suit \
-        #         != self.trump_suit:
-        #     self.current_winning_card = self.fourth_card
-
-        # print(self.current_winning_card["card"].suit + " " + str(self.current_winning_card["card"].value) + " " +
-        #       self.current_winning_card["card"].rank + " " + self.current_winning_card["player"].name)
-        # print(self.lead_card["card"].suit + " " + str(self.lead_card["card"].value) + " " +
-        #       self.lead_card["card"].rank + " " + self.lead_card["player"].name)
-        # print(self.second_card["card"].suit + " " + str(self.second_card["card"].value) + " " +
-        #       self.second_card["card"].rank + " " + self.second_card["player"].name)
-        # print(self.third_card["card"].suit + " " + str(self.third_card["card"].value) + " " +
-        #       self.third_card["card"].rank + " " + self.third_card["player"].name)
-        # print(self.fourth_card["card"].suit + " " + str(self.fourth_card["card"].value) + " " +
-        #       self.fourth_card["card"].rank + " " + self.fourth_card["player"].name)
-
         for card in self.cards_played:
             print(card["card"].suit + " " + str(card["card"].value) + " " +
                 card["card"].rank + " " + card["player"].name)
@@ -357,6 +270,7 @@ class Trick:
         print("----------cards in hand--------")
         for player in self.players:
             player.show_hand()
+
 
 class Round:
     TRICKS_PER_ROUND = 13
@@ -376,7 +290,6 @@ class Round:
         for _ in range(self.TRICKS_PER_ROUND):
             trick = Trick(self.sort_players(self.players), self.trump_suit)
             trick.play_trick()
-            print("play tricky called----------------------!")
             self.last_trick_winner = trick.winner
             self.trick_number = + 1
 
@@ -397,12 +310,9 @@ class Round:
         return sorted_players
 
 
-
-
-
 class Game:
     def __init__(self):
-        self.players = [Player("Add"), Player("TDB"), Player("Sam"), Player("Cat")]
+        self.players = [HumanPlayer("Add"), Player("TDB"), Player("Sam"), Player("Cat")]
         self.round_num = 0
 
     def play_game(self):
@@ -417,9 +327,6 @@ class Game:
 def main():
     game = Game()
     game.play_game()
-    # dealer = Dealer(deck, players)
-    # dealer.deal_cards()
-
 
 if __name__ == "__main__":
     main()
